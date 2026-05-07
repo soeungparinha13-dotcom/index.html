@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futures Trading Checklist</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+Khmer:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { 
+    --bg: #07090f;
+    --surface: #0d1117;
+    --card: #111820;
+    --border: #1e2d3d;
+    --accent: #00e5ff;
+    --green: #00ff88;
+    --red: #ff3d57;
+    --yellow: #ffd700;
+    --text: #c9d1d9;
+    --muted: #445566;
+    --font-mono: 'Space Mono', monospace;
+    --font-km: 'Noto Sans Khmer', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-km);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .header .tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    opacity: 0.8;
+  }
+
+  .header h1 {
+    font-family: var(--font-mono);
+    font-size: clamp(22px, 5vw, 32px);
+    color: #fff;
+    letter-spacing: -1px;
+  }
+
+  .header h1 span { color: var(--accent); }
+
+  .header p {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* Risk badge */
+  .risk-badge {
+    display: inline-flex;
+    gap: 16px;
+    margin-top: 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 20px;
+  }
+
+  .risk-item {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .risk-item .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .sl .dot { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .tp .dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .sl { color: var(--red); }
+  .tp { color: var(--green); }
+
+  /* Section */
+  .section {
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .section:nth-child(2) { animation-delay: 0.1s; }
+  .section:nth-child(3) { animation-delay: 0.2s; }
+  .section:nth-child(4) { animation-delay: 0.3s; }
+  .section:nth-child(5) { animation-delay: 0.4s; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .section-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .section-count {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .card:hover { border-color: rgba(0,229,255,0.2); }
+
+  /* Checklist Item */
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+    user-select: none;
+  }
+
+  .check-item:last-child { border-bottom: none; }
+  .check-item:hover { background: rgba(0,229,255,0.03); }
+  .check-item.checked { background: rgba(0,255,136,0.03); }
+
+  .checkbox {
+    width: 20px; height: 20px;
+    border: 2px solid var(--muted);
+    border-radius: 5px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .check-item.checked .checkbox {
+    background: var(--green);
+    border-color: var(--green);
+    box-shadow: 0 0 10px rgba(0,255,136,0.4);
+  }
+
+  .checkbox svg {
+    width: 12px; height: 12px;
+    stroke: #000;
+    stroke-width: 2.5;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .check-item.checked .checkbox svg { opacity: 1; }
+
+  .check-content { flex: 1; }
+
+  .check-label {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+    transition: color 0.2s;
+  }
+
+  .check-item.checked .check-label {
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+
+  .check-note {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .progress-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .progress-pct {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 0 10px rgba(0,229,255,0.5);
+    width: 0%;
+  }
+
+  /* Status */
+  .status-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .status-pill {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* Decision Box */
+  .decision-box {
+    border-radius: 12px;
+    padding: 20px 24px;
+    text-align: center;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+    transition: all 0.4s;
+    animation: fadeUp 0.5s 0.5s ease both;
+  }
+
+  .decision-box.no-trade {
+    background: rgba(255,61,87,0.05);
+    border-color: rgba(255,61,87,0.3);
+  }
+
+  .decision-box.ready {
+    background: rgba(0,255,136,0.05);
+    border-color: rgba(0,255,136,0.3);
+  }
+
+  .decision-box.partial {
+    background: rgba(255,215,0,0.04);
+    border-color: rgba(255,215,0,0.2);
+  }
+
+  .decision-icon { font-size: 28px; margin-bottom: 8px; }
+
+  .decision-title {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+
+  .no-trade .decision-title { color: var(--red); }
+  .ready .decision-title { color: var(--green); }
+  .partial .decision-title { color: var(--yellow); }
+
+  .decision-msg {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Reset button */
+  .reset-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    animation: fadeUp 0.5s 0.6s ease both;
+  }
+
+  .reset-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,229,255,0.05);
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Pulse for ready */
+  @keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,136,0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(0,255,136,0); }
+  }
+
+  .decision-box.ready { animation: pulse-green 2s ease infinite; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="tag">⚡ Futures Trading · Discipline System</div>
+    <h1>Parinh <span>Trading System</span></h1>
+    <p>ពិនិត្យរាល់ចំណុចមុនចូល Trade រៀងរាល់ដង</p>
+    <div class="risk-badge">
+      <span class="risk-item sl"><span class="dot"></span>SL — 1%</span>
+      <span class="risk-item tp"><span class="dot"></span>TP — 3%</span>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-label">PROGRESS</span>
+      <span class="progress-pct" id="pct">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="bar"></div>
+    </div>
+    <div class="status-bar">
+      <span class="status-pill" id="checked-count">0 / 0 ✓</span>
+      <span class="status-pill" id="entry-status">ENTRY: —</span>
+      <span class="status-pill" id="exit-status">EXIT: —</span>
+    </div>
+  </div>
+
+  <!-- Decision Box -->
+  <div class="decision-box no-trade" id="decision">
+    <div class="decision-icon">🚫</div>
+    <div class="decision-title">NO TRADE</div>
+    <div class="decision-msg">ត្រូវ Check ចំណុចទាំងអស់ជាមុនសិន</div>
+  </div>
+
+  <!-- Section 1: Market Analysis -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,229,255,0.1);">📊</div>
+      <div>
+        <div class="section-title">ការវិភាគទីផ្សារ</div>
+      </div>
+      <span class="section-count" id="cnt-1">0/4</span>
+    </div>
+    <div class="card" id="group-1">
+      <div class="check-item" data-group="1" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">Trend ច្បាស់ — Higher High / Lower Low</div>
+          <div class="check-note">HTF (4H / 1D) ត្រូវវិភាគជាមុន</div>
+        </div>
+      </div>
+      <div class="check-item" data-group="1" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">Structure Break / BOS / CHoCH បានបញ្ជាក់</div>
+          <div class="check-note">ទីផ្សារកំពុង Shift Direction</div>
+        </div>
+      </div>
+      <div class="check-item" data-group="1" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">Key Level / Zone ច្បាស់ (Support / Resistance)</div>
+          <div class="check-note">ដែលតម្លៃធ្លាប់ Reaction</div>
+        </div>
+      </div>
+      <div class="check-item" data-group="1" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">Volume បញ្ជាក់ Trend (មិន Divergence)</div>
+          <div class="check-note">Volume ធំ = Trend Strong</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Entry Rules -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,255,136,0.1);">🎯</div>
+      <div>
+        <div class="section-title">ច្បាប់ Entry</div>
+      </div>
+      <span class="section-count" id="cnt-2">0/5</span>
+    </div>
+    <div class="card" id="group-2">
+      <div class="check-item entry" data-group="2" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">Setup ត្រូវតាម Strategy (មិន Random)</div>
+          <div class="check-note">ICT / SMC / PA — ជ្រើសសម Strategy ជាមួយ</div>
+        </div>
+      </div>
+      <div class="check-item entry" data-group="2" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">Confirmation Signal បានបង្ហាញ</div>
+          <div class="check-note">Engulfing / Pin Bar / Rejection Wick</div>
+        </div>
+      </div>
+      <div class="check-item entry" data-group="2" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">Entry ត្រូវ TF ទាប (15m / 5m)</div>
+          <div class="check-note">Refine Entry បន្ទាប់ HTF Analysis</div>
+        </div>
+      </div>
+      <div class="check-item entry" data-group="2" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">គ្មាន News ធំ (FOMC / CPI) ក្នុង 30 នាទី</div>
+          <div class="check-note">ពិនិត្យ Forex Factory / Crypto Calendar</div>
+        </div>
+      </div>
+      <div class="check-item entry" data-group="2" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">Spread / Funding Rate មិន Extreme</div>
+          <div class="check-note">Funding Rate &gt; 0.1% = ប្រយ័ត្ន Long</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Risk Management -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(255,61,87,0.1);">🛡️</div>
+      <div>
+        <div class="section-title">Risk Management</div>
+      </div>
+      <span class="section-count" id="cnt-3">0/4</span>
+    </div>
+    <div class="card" id="group-3">
+      <div class="check-item" data-group="3" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">SL កំណត់ហើយ — ខាងក្រោម Structure</div>
+          <div class="check-note">Risk 1% នៃ Capital ក្នុង Trade នេះ</div>
+        </div>
+      </div>
+      <div class="check-item" data-group="3" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">RR Ratio ≥ 1:3 (TP = 3x SL)</div>
+          <div class="check-note">Trade Worth Taking មានន័យ RR ≥ 1:3</div>
+        </div>
+      </div>
+      <div class="check-item" data-group="3" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">Position Size គណនាហើយ (Calculator)</div>
+          <div class="check-note">មិន Overleveraged — Leverage សមស្រប</div>
+        </div>
+      </div>
+      <div class="check-item" data-group="3" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">Daily Loss Limit មិនទាន់ដល់</div>
+          <div class="check-note">ប្រសិន Lose 2-3% ហើយ → STOP TRADING</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: Exit Rules -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(255,215,0,0.1);">💰</div>
+      <div>
+        <div class="section-title">ច្បាប់ Exit / Take Profit</div>
+      </div>
+      <span class="section-count" id="cnt-4">0/3</span>
+    </div>
+    <div class="card" id="group-4">
+      <div class="check-item exit" data-group="4" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">TP1 / TP2 / TP3 កំណត់ច្បាស់ (TP3 = 3R)</div>
+          <div class="check-note">TP1 = 1R · TP2 = 2R · TP3 = 3R</div>
+        </div>
+      </div>
+      <div class="check-item exit" data-group="4" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">នឹង Move SL to BE នៅ TP1 ដែល Hit</div>
+          <div class="check-note">Lock Profit — Risk Free Trade</div>
+        </div>
+      </div>
+      <div class="check-item exit" data-group="4" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">នឹង Exit ទាំងស្រុង នៅ Major Level បន្ទាប់</div>
+          <div class="check-note">មិន Greedy — Respect the Level</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: Mindset -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(150,100,255,0.1);">🧠</div>
+      <div>
+        <div class="section-title">Mindset / វិន័យ</div>
+      </div>
+      <span class="section-count" id="cnt-5">0/3</span>
+    </div>
+    <div class="card" id="group-5">
+      <div class="check-item" data-group="5" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">ខ្ញុំ Trade តាម Plan — មិន Revenge Trade</div>
+          <div class="check-note">បន្ទាប់ Loss ធំ → ឈប់ Trade ថ្ងៃនេះ</div>
+        </div>
+      </div>
+      <div class="check-item" data-group="5" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">ខ្ញុំ មិន FOMO — Setup ល្អ ខ្ញុំ Wait</div>
+          <div class="check-note">No Setup = No Trade · Patient is Profit</div>
+        </div>
+      </div>
+      <div class="check-item" data-group="5" onclick="toggle(this)">
+        <div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>
+        <div class="check-content">
+          <div class="check-label">Trade នេះ ខ្ញុំ Accept Risk 1% ហើយ</div>
+          <div class="check-note">Loss = OK · Process &gt; Result</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset -->
+  <button class="reset-btn" onclick="resetAll()">↺ Reset Checklist</button>
+
+</div>
+
+<script>
+  const GROUPS = {
+    1: { total: 4, label: 'MARKET' },
+    2: { total: 5, label: 'ENTRY' },
+    3: { total: 4, label: 'RISK' },
+    4: { total: 3, label: 'EXIT' },
+    5: { total: 3, label: 'MINDSET' }
+  };
+  const TOTAL = Object.values(GROUPS).reduce((s, g) => s + g.total, 0);
+
+  function toggle(el) {
+    el.classList.toggle('checked');
+    update();
+  }
+
+  function update() {
+    let totalChecked = 0;
+    let entryChecked = 0, exitChecked = 0;
+
+
+    // Per group counts
+    for (let g = 1; g <= 5; g++) {
+      const items = document.querySelectorAll(`[data-group="${g}"]`);
+      const checked = [...items].filter(i => i.classList.contains('checked')).length;
+      document.getElementById(`cnt-${g}`).textContent = `${checked}/${GROUPS[g].total}`;
+      totalChecked += checked;
+      if (g === 2) entryChecked = checked;
+      if (g === 4) exitChecked = checked;
+    }
+
+    const pct = Math.round((totalChecked / TOTAL) * 100);
+    document.getElementById('pct').textContent = pct + '%';
+    document.getElementById('bar').style.width 
