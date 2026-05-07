@@ -6,7 +6,7 @@
 <title>Futures Trading Checklist</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+Khmer:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root { 
+  :root {
     --bg: #07090f;
     --surface: #0d1117;
     --card: #111820;
@@ -383,7 +383,7 @@
   <!-- Header -->
   <div class="header">
     <div class="tag">⚡ Futures Trading · Discipline System</div>
-    <h1>Parinh <span>Trading System</span></h1>
+    <h1>Parinha <span>Trading System</span></h1>
     <p>ពិនិត្យរាល់ចំណុចមុនចូល Trade រៀងរាល់ដង</p>
     <div class="risk-badge">
       <span class="risk-item sl"><span class="dot"></span>SL — 1%</span>
@@ -636,7 +636,6 @@
     let totalChecked = 0;
     let entryChecked = 0, exitChecked = 0;
 
-
     // Per group counts
     for (let g = 1; g <= 5; g++) {
       const items = document.querySelectorAll(`[data-group="${g}"]`);
@@ -649,4 +648,30 @@
 
     const pct = Math.round((totalChecked / TOTAL) * 100);
     document.getElementById('pct').textContent = pct + '%';
-    document.getElementById('bar').style.width 
+    document.getElementById('bar').style.width = pct + '%';
+    document.getElementById('checked-count').textContent = `${totalChecked} / ${TOTAL} ✓`;
+    document.getElementById('entry-status').textContent = `ENTRY: ${entryChecked}/${GROUPS[2].total}`;
+    document.getElementById('exit-status').textContent = `EXIT: ${exitChecked}/${GROUPS[4].total}`;
+
+    const box = document.getElementById('decision');
+    if (totalChecked === TOTAL) {
+      box.className = 'decision-box ready';
+      box.innerHTML = `<div class="decision-icon">✅</div><div class="decision-title">TRADE READY</div><div class="decision-msg">អ្នក Ready! Execute Plan ដោយ Discipline</div>`;
+    } else if (pct >= 60) {
+      box.className = 'decision-box partial';
+      box.innerHTML = `<div class="decision-icon">⚠️</div><div class="decision-title">ALMOST READY</div><div class="decision-msg">ពិនិត្យចំណុចដែលនៅ (${TOTAL - totalChecked} ចំណុចទៀត)</div>`;
+    } else {
+      box.className = 'decision-box no-trade';
+      box.innerHTML = `<div class="decision-icon">🚫</div><div class="decision-title">NO TRADE</div><div class="decision-msg">ត្រូវ Check ចំណុចទាំងអស់ជាមុនសិន</div>`;
+    }
+  }
+
+  function resetAll() {
+    document.querySelectorAll('.check-item').forEach(i => i.classList.remove('checked'));
+    update();
+  }
+
+  update();
+</script>
+</body>
+</html>
