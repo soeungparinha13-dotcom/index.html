@@ -46,9 +46,11 @@
   .stat-sub { font-size: 11px; color: var(--muted); margin-top: 5px; }
   .section-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .section-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
-  .trade-row { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; user-select: none; }
+  .trade-row { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; user-select: none; flex-wrap: wrap; }
   .trade-row:last-child { border-bottom: none; }
   .trade-row:hover { background: rgba(0,229,255,0.02); }
+  .trade-expand { background: rgba(0,0,0,0.2); border-top: 1px solid #1a2535; padding: 10px 16px 14px; display: none; font-size: 13px; color: var(--text); line-height: 1.6; width: 100%; }
+  .trade-expand.open { display: block; }
   .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
   .badge-long { color: var(--green); background: rgba(0,255,136,0.1); }
   .badge-short { color: var(--red); background: rgba(255,61,87,0.1); }
@@ -59,14 +61,13 @@
   .trade-date { font-size: 11px; color: var(--muted); }
   .trade-rr { font-family: var(--font-mono); font-size: 11px; color: var(--muted); flex-shrink: 0; }
   .trade-pnl { font-family: var(--font-mono); font-size: 13px; font-weight: 700; min-width: 72px; text-align: right; flex-shrink: 0; }
-  .trade-expand { background: rgba(0,0,0,0.2); border-top: 1px solid #1a2535; padding: 10px 16px 14px; display: none; font-size: 13px; color: var(--text); line-height: 1.6; }
-  .trade-expand.open { display: block; }
   .form-wrap { background: var(--card); border: 1px solid rgba(0,229,255,0.2); border-radius: 12px; padding: 22px; margin-bottom: 24px; animation: fadeDown 0.4s ease both; }
   .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-bottom: 14px; }
   .form-group { display: flex; flex-direction: column; gap: 6px; }
   .form-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; }
   .form-control { padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--font-mono); font-size: 13px; outline: none; width: 100%; transition: border-color 0.2s; }
   .form-control:focus { border-color: var(--accent); }
+  select.form-control option { background: var(--surface); color: var(--text); }
   .toggle-row { display: flex; gap: 8px; }
   .toggle-btn { flex: 1; padding: 10px 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); cursor: pointer; transition: all 0.2s; letter-spacing: 1px; }
   .toggle-btn.active-long { background: rgba(0,255,136,0.12); border-color: rgba(0,255,136,0.4); color: var(--green); }
@@ -150,6 +151,7 @@
 </style>
 </head>
 <body>
+
 <nav>
   <div class="nav-inner">
     <div class="nav-brand">PARINHA<span>.SYS</span></div>
@@ -161,6 +163,8 @@
     </div>
   </div>
 </nav>
+
+<!-- Confirm Overlay -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
     <div class="confirm-msg" id="confirmMsg">Delete នេះ?</div>
@@ -170,6 +174,8 @@
     </div>
   </div>
 </div>
+
+<!-- DASHBOARD -->
 <div class="page active" id="page-dashboard">
   <div class="container">
     <div class="page-header">
@@ -179,7 +185,7 @@
     </div>
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value" id="s-wr" style="color:var(--red)">0.0%</div><div class="stat-sub" id="s-wrl">0W / 0L / 0BE</div></div>
-      <div class="stat-card"><div class="stat-label">Total P&amp;L</div><div class="stat-value" id="s-pnl" style="color:var(--green)">+0.00%</div><div class="stat-sub" id="s-pnlsub">0 trades total</div></div>
+      <div class="stat-card"><div class="stat-label">Total P&L</div><div class="stat-value" id="s-pnl" style="color:var(--green)">+0.00%</div><div class="stat-sub" id="s-pnlsub">0 trades total</div></div>
       <div class="stat-card"><div class="stat-label">Profit Factor</div><div class="stat-value" id="s-pf" style="color:var(--yellow)">0.00</div><div class="stat-sub">Gross profit / loss</div></div>
       <div class="stat-card"><div class="stat-label">Avg RR</div><div class="stat-value" id="s-rr" style="color:var(--accent)">0.00R</div><div class="stat-sub">Per trade average</div></div>
       <div class="stat-card"><div class="stat-label">Best Trade</div><div class="stat-value" id="s-best" style="color:var(--green)">—</div></div>
@@ -203,6 +209,8 @@
     </div>
   </div>
 </div>
+
+<!-- JOURNAL -->
 <div class="page" id="page-journal">
   <div class="container">
     <div class="page-header">
@@ -214,36 +222,78 @@
       <button id="jtab-log" class="nav-tab active" onclick="switchJTab('log')" style="padding:12px 18px">Trade Log</button>
       <button id="jtab-add" class="nav-tab" onclick="switchJTab('add')" style="padding:12px 18px">+ Record</button>
     </div>
+    <!-- Add Form -->
     <div id="addForm" style="display:none">
       <div class="form-wrap">
         <div class="section-label" style="margin-bottom:18px">Trade ថ្មី</div>
         <div class="form-grid">
-          <div class="form-group"><label class="form-label">Pair / Coin</label><select class="form-control" id="f-pair"></select></div>
-          <div class="form-group"><label class="form-label">Direction</label><div class="toggle-row"><button class="toggle-btn active-long" id="btn-long" onclick="setDir('LONG')">▲ LONG</button><button class="toggle-btn" id="btn-short" onclick="setDir('SHORT')">▼ SHORT</button></div></div>
-          <div class="form-group"><label class="form-label">Result</label><div class="toggle-row"><button class="toggle-btn active-win" id="btn-win" onclick="setResult('WIN')">WIN</button><button class="toggle-btn" id="btn-loss" onclick="setResult('LOSS')">LOSS</button><button class="toggle-btn" id="btn-be" onclick="setResult('BE')">BE</button></div></div>
-          <div class="form-group"><label class="form-label">RR Ratio</label><input class="form-control" type="number" step="0.1" id="f-rr" placeholder="3.0"></div>
-          <div class="form-group"><label class="form-label">P&amp;L % (+ ឈ្នះ / - ចាញ់)</label><input class="form-control" type="number" step="0.01" id="f-pnl" placeholder="+3.00 ឬ -1.00"></div>
-          <div class="form-group"><label class="form-label">Leverage (optional)</label><input class="form-control" type="number" id="f-lev" placeholder="10"></div>
-          <div class="form-group"><label class="form-label">Date</label><input class="form-control" type="date" id="f-date"></div>
+          <div class="form-group">
+            <label class="form-label">Pair / Coin</label>
+            <select class="form-control" id="f-pair"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Direction</label>
+            <div class="toggle-row">
+              <button class="toggle-btn active-long" id="btn-long" onclick="setDir('LONG')">▲ LONG</button>
+              <button class="toggle-btn" id="btn-short" onclick="setDir('SHORT')">▼ SHORT</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Result</label>
+            <div class="toggle-row">
+              <button class="toggle-btn active-win" id="btn-win" onclick="setResult('WIN')">WIN</button>
+              <button class="toggle-btn" id="btn-loss" onclick="setResult('LOSS')">LOSS</button>
+              <button class="toggle-btn" id="btn-be" onclick="setResult('BE')">BE</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">RR Ratio</label>
+            <input class="form-control" type="number" step="0.1" min="0" id="f-rr" placeholder="3.0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">P&L % (+ ឈ្នះ / - ចាញ់)</label>
+            <input class="form-control" type="number" step="0.01" id="f-pnl" placeholder="+3.00 ឬ -1.00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Leverage (optional)</label>
+            <input class="form-control" type="number" min="1" id="f-lev" placeholder="10">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input class="form-control" type="date" id="f-date">
+          </div>
         </div>
-        <div class="form-group" style="margin-bottom:14px"><label class="form-label">Notes / Lesson (optional)</label><textarea class="form-control" id="f-notes" rows="3" placeholder="មូលហេតុ Win / Loss, Mistake, Lesson..."></textarea></div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label class="form-label">Notes / Lesson (optional)</label>
+          <textarea class="form-control" id="f-notes" rows="3" placeholder="មូលហេតុ Win / Loss, Mistake, Lesson..."></textarea>
+        </div>
         <div id="formError" class="form-error" style="display:none"></div>
         <div style="display:flex;gap:10px;margin-top:4px">
-          <button id="saveBtn" class="btn btn-save-win" onclick="saveTrade()">SAVE WIN</button>
+          <button id="saveBtn" class="btn btn-save-win" onclick="saveTrade()">💾 SAVE WIN</button>
           <button class="btn btn-muted" style="padding:13px 18px;flex-shrink:0" onclick="switchJTab('log')">Cancel</button>
         </div>
       </div>
     </div>
+    <!-- Log Section -->
     <div id="logSection">
       <div class="filter-row">
-        <select class="form-control" id="filterPair" style="max-width:140px" onchange="renderLog()"><option value="ALL">All Pairs</option></select>
-        <select class="form-control" id="filterResult" style="max-width:120px" onchange="renderLog()"><option value="ALL">All Results</option><option value="WIN">WIN</option><option value="LOSS">LOSS</option><option value="BE">BE</option></select>
+        <select class="form-control" id="filterPair" style="max-width:140px" onchange="renderLog()">
+          <option value="ALL">All Pairs</option>
+        </select>
+        <select class="form-control" id="filterResult" style="max-width:120px" onchange="renderLog()">
+          <option value="ALL">All Results</option>
+          <option value="WIN">WIN</option>
+          <option value="LOSS">LOSS</option>
+          <option value="BE">BE</option>
+        </select>
         <span class="filter-count" id="logCount">0 trades</span>
       </div>
       <div class="card" id="tradeLog"></div>
     </div>
   </div>
 </div>
+
+<!-- PAIRS -->
 <div class="page" id="page-pairs">
   <div class="container">
     <div class="page-header">
@@ -251,13 +301,27 @@
       <h1 class="page-title">គូ <span>ជួញដូរ</span></h1>
       <p class="page-sub">គ្រប់គ្រង Coin / Contract ដែលកំពុងជួញដូរ</p>
     </div>
-    <div style="margin-bottom:18px;display:flex;justify-content:flex-end"><button class="btn btn-accent" onclick="togglePairForm()">+ បន្ថែម Pair</button></div>
+    <div style="margin-bottom:18px;display:flex;justify-content:flex-end">
+      <button class="btn btn-accent" onclick="togglePairForm()">+ បន្ថែម Pair</button>
+    </div>
     <div id="pairAddForm" style="display:none">
       <div class="form-wrap">
         <div class="section-label" style="margin-bottom:16px">Pair ថ្មី</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-          <div class="form-group" style="flex:2;min-width:150px"><label class="form-label">Symbol</label><input class="form-control" id="p-sym" placeholder="BTC/USDT" onkeydown="if(event.key==='Enter')addPair()"></div>
-          <div class="form-group" style="flex:1;min-width:120px"><label class="form-label">Category</label><select class="form-control" id="p-cat"><option>Crypto</option><option>Forex</option><option>Stocks</option><option>Commodities</option><option>Indices</option></select></div>
+          <div class="form-group" style="flex:2;min-width:150px">
+            <label class="form-label">Symbol</label>
+            <input class="form-control" id="p-sym" placeholder="BTC/USDT" onkeydown="if(event.key==='Enter')addPair()">
+          </div>
+          <div class="form-group" style="flex:1;min-width:120px">
+            <label class="form-label">Category</label>
+            <select class="form-control" id="p-cat">
+              <option>Crypto</option>
+              <option>Forex</option>
+              <option>Stocks</option>
+              <option>Commodities</option>
+              <option>Indices</option>
+            </select>
+          </div>
           <button class="btn btn-green" onclick="addPair()" style="padding:10px 18px;flex-shrink:0">+ Add</button>
         </div>
         <div id="pairAddError" class="form-error" style="display:none"></div>
@@ -271,6 +335,8 @@
     </div>
   </div>
 </div>
+
+<!-- CHECKLIST -->
 <div class="page" id="page-checklist">
   <div class="container" style="max-width:820px">
     <div class="page-header">
@@ -285,93 +351,486 @@
     <div class="progress-wrap">
       <div class="progress-top"><span class="progress-label">PROGRESS</span><span class="progress-pct" id="cl-pct">0%</span></div>
       <div class="progress-bar"><div class="progress-fill" id="cl-bar"></div></div>
-      <div class="status-pills"><span class="status-pill" id="cl-total">0 / 0 ✓</span><span class="status-pill" id="cl-entry">ENTRY: 0/5</span><span class="status-pill" id="cl-exit">EXIT: 0/3</span></div>
+      <div class="status-pills">
+        <span class="status-pill" id="cl-total">0 / 0 ✓</span>
+        <span class="status-pill" id="cl-entry">ENTRY: 0/5</span>
+        <span class="status-pill" id="cl-exit">EXIT: 0/3</span>
+      </div>
     </div>
     <div class="decision-box no-trade" id="cl-decision">
-      <div class="decision-icon">🚫</div><div class="decision-title">NO TRADE</div><div class="decision-msg">ត្រូវ Check ចំណុចទាំងអស់ជាមុនសិន</div>
+      <div class="decision-icon">🚫</div>
+      <div class="decision-title">NO TRADE</div>
+      <div class="decision-msg">ត្រូវ Check ចំណុចទាំងអស់ជាមុនសិន</div>
     </div>
-    <div class="cl-section"><div class="cl-header"><div class="cl-icon" style="background:rgba(0,229,255,0.1)">📊</div><div class="cl-name">ការវិភាគទីផ្សារ</div><span class="cl-count" id="cnt-1">0/4</span></div><div class="card" id="group-1"><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Trend ច្បាស់ — Higher High / Lower Low</div><div class="cl-note">HTF (4H / 1D) ត្រូវវិភាគជាមុន</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Structure Break / BOS / CHoCH បានបញ្ជាក់</div><div class="cl-note">ទីផ្សារកំពុង Shift Direction</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Key Level / Zone ច្បាស់ (Support / Resistance)</div><div class="cl-note">ដែលតម្លៃធ្លាប់ Reaction</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Volume បញ្ជាក់ Trend (មិន Divergence)</div><div class="cl-note">Volume ធំ = Trend Strong</div></div></div></div></div>
-    <div class="cl-section"><div class="cl-header"><div class="cl-icon" style="background:rgba(0,255,136,0.1)">🎯</div><div class="cl-name">ច្បាប់ Entry</div><span class="cl-count" id="cnt-2">0/5</span></div><div class="card" id="group-2"><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Setup ត្រូវតាម Strategy (មិន Random)</div><div class="cl-note">ICT / SMC / PA — ជ្រើសសម Strategy ជាមួយ</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Confirmation Signal បានបង្ហាញ</div><div class="cl-note">Engulfing / Pin Bar / Rejection Wick</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Entry ត្រូវ TF ទាប (15m / 5m)</div><div class="cl-note">Refine Entry បន្ទាប់ HTF Analysis</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">គ្មាន News ធំ (FOMC / CPI) ក្នុង 30 នាទី</div><div class="cl-note">ពិនិត្យ Forex Factory / Crypto Calendar</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Spread / Funding Rate មិន Extreme</div><div class="cl-note">Funding Rate > 0.1% = ប្រយ័ត្ន Long</div></div></div></div></div>
-    <div class="cl-section"><div class="cl-header"><div class="cl-icon" style="background:rgba(255,61,87,0.1)">🛡️</div><div class="cl-name">Risk Management</div><span class="cl-count" id="cnt-3">0/4</span></div><div class="card" id="group-3"><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">SL កំណត់ហើយ — ខាងក្រោម Structure</div><div class="cl-note">Risk 1% នៃ Capital ក្នុង Trade នេះ</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">RR Ratio ≥ 1:3 (TP = 3x SL)</div><div class="cl-note">Trade Worth Taking មានន័យ RR ≥ 1:3</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Position Size គណនាហើយ (Calculator)</div><div class="cl-note">មិន Overleveraged — Leverage សមស្រប</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Daily Loss Limit មិនទាន់ដល់</div><div class="cl-note">ប្រសិន Lose 2-3% ហើយ → STOP TRADING</div></div></div></div></div>
-    <div class="cl-section"><div class="cl-header"><div class="cl-icon" style="background:rgba(255,215,0,0.1)">💰</div><div class="cl-name">ច្បាប់ Exit / Take Profit</div><span class="cl-count" id="cnt-4">0/3</span></div><div class="card" id="group-4"><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">TP1 / TP2 / TP3 កំណត់ច្បាស់ (TP3 = 3R)</div><div class="cl-note">TP1 = 1R · TP2 = 2R · TP3 = 3R</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">នឹង Move SL to BE នៅ TP1 ដែល Hit</div><div class="cl-note">Lock Profit — Risk Free Trade</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">នឹង Exit ទាំងស្រុង នៅ Major Level បន្ទាប់</div><div class="cl-note">មិន Greedy — Respect the Level</div></div></div></div></div>
-    <div class="cl-section"><div class="cl-header"><div class="cl-icon" style="background:rgba(150,100,255,0.1)">🧠</div><div class="cl-name">Mindset / វិន័យ</div><span class="cl-count" id="cnt-5">0/3</span></div><div class="card" id="group-5"><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">ខ្ញុំ Trade តាម Plan — មិន Revenge Trade</div><div class="cl-note">បន្ទាប់ Loss ធំ → ឈប់ Trade ថ្ងៃនេះ</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">ខ្ញុំ មិន FOMO — Setup ល្អ ខ្ញុំ Wait</div><div class="cl-note">No Setup = No Trade · Patient is Profit</div></div></div><div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Trade នេះ ខ្ញុំ Accept Risk 1% ហើយ</div><div class="cl-note">Loss = OK · Process > Result</div></div></div></div></div>
+
+    <!-- Group 1 -->
+    <div class="cl-section">
+      <div class="cl-header">
+        <div class="cl-icon" style="background:rgba(0,229,255,0.1)">📊</div>
+        <div class="cl-name">ការវិភាគទីផ្សារ</div>
+        <span class="cl-count" id="cnt-1">0/4</span>
+      </div>
+      <div class="card" id="group-1">
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Trend ច្បាស់ — Higher High / Lower Low</div><div class="cl-note">HTF (4H / 1D) ត្រូវវិភាគជាមុន</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Structure Break / BOS / CHoCH បានបញ្ជាក់</div><div class="cl-note">ទីផ្សារកំពុង Shift Direction</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Key Level / Zone ច្បាស់ (Support / Resistance)</div><div class="cl-note">ដែលតម្លៃធ្លាប់ Reaction</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Volume បញ្ជាក់ Trend (មិន Divergence)</div><div class="cl-note">Volume ធំ = Trend Strong</div></div></div>
+      </div>
+    </div>
+
+    <!-- Group 2 -->
+    <div class="cl-section">
+      <div class="cl-header">
+        <div class="cl-icon" style="background:rgba(0,255,136,0.1)">🎯</div>
+        <div class="cl-name">ច្បាប់ Entry</div>
+        <span class="cl-count" id="cnt-2">0/5</span>
+      </div>
+      <div class="card" id="group-2">
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Setup ត្រូវតាម Strategy (មិន Random)</div><div class="cl-note">ICT / SMC / PA — ជ្រើសសម Strategy ជាមួយ</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Confirmation Signal បានបង្ហាញ</div><div class="cl-note">Engulfing / Pin Bar / Rejection Wick</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Entry ត្រូវ TF ទាប (15m / 5m)</div><div class="cl-note">Refine Entry បន្ទាប់ HTF Analysis</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">គ្មាន News ធំ (FOMC / CPI) ក្នុង 30 នាទី</div><div class="cl-note">ពិនិត្យ Forex Factory / Crypto Calendar</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Spread / Funding Rate មិន Extreme</div><div class="cl-note">Funding Rate > 0.1% = ប្រយ័ត្ន Long</div></div></div>
+      </div>
+    </div>
+
+    <!-- Group 3 -->
+    <div class="cl-section">
+      <div class="cl-header">
+        <div class="cl-icon" style="background:rgba(255,61,87,0.1)">🛡️</div>
+        <div class="cl-name">Risk Management</div>
+        <span class="cl-count" id="cnt-3">0/4</span>
+      </div>
+      <div class="card" id="group-3">
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">SL កំណត់ហើយ — ខាងក្រោម Structure</div><div class="cl-note">Risk 1% នៃ Capital ក្នុង Trade នេះ</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">RR Ratio ≥ 1:3 (TP = 3x SL)</div><div class="cl-note">Trade Worth Taking មានន័យ RR ≥ 1:3</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Position Size គណនាហើយ (Calculator)</div><div class="cl-note">មិន Overleveraged — Leverage សមស្រប</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Daily Loss Limit មិនទាន់ដល់</div><div class="cl-note">ប្រសិន Lose 2-3% ហើយ → STOP TRADING</div></div></div>
+      </div>
+    </div>
+
+    <!-- Group 4 -->
+    <div class="cl-section">
+      <div class="cl-header">
+        <div class="cl-icon" style="background:rgba(255,215,0,0.1)">💰</div>
+        <div class="cl-name">ច្បាប់ Exit / Take Profit</div>
+        <span class="cl-count" id="cnt-4">0/3</span>
+      </div>
+      <div class="card" id="group-4">
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">TP1 / TP2 / TP3 កំណត់ច្បាស់ (TP3 = 3R)</div><div class="cl-note">TP1 = 1R · TP2 = 2R · TP3 = 3R</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">នឹង Move SL to BE នៅ TP1 ដែល Hit</div><div class="cl-note">Lock Profit — Risk Free Trade</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">នឹង Exit ទាំងស្រុង នៅ Major Level បន្ទាប់</div><div class="cl-note">មិន Greedy — Respect the Level</div></div></div>
+      </div>
+    </div>
+
+    <!-- Group 5 -->
+    <div class="cl-section">
+      <div class="cl-header">
+        <div class="cl-icon" style="background:rgba(150,100,255,0.1)">🧠</div>
+        <div class="cl-name">Mindset / វិន័យ</div>
+        <span class="cl-count" id="cnt-5">0/3</span>
+      </div>
+      <div class="card" id="group-5">
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">ខ្ញុំ Trade តាម Plan — មិន Revenge Trade</div><div class="cl-note">បន្ទាប់ Loss ធំ → ឈប់ Trade ថ្ងៃនេះ</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">ខ្ញុំ មិន FOMO — Setup ល្អ ខ្ញុំ Wait</div><div class="cl-note">No Setup = No Trade · Patient is Profit</div></div></div>
+        <div class="cl-item" onclick="clToggle(this)"><div class="checkbox"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div><div><div class="cl-label">Trade នេះ ខ្ញុំ Accept Risk 1% ហើយ</div><div class="cl-note">Loss = OK · Process > Result</div></div></div>
+      </div>
+    </div>
+
     <button class="btn btn-muted" style="width:100%;padding:14px;font-size:11px;letter-spacing:2px;border-radius:10px" onclick="clReset()">↺ Reset Checklist</button>
   </div>
 </div>
-<script>
-const PAIRS_KEY='parinha_pairs',TRADES_KEY='parinha_trades';
-const DEFAULT_PAIRS=[{id:'p1',symbol:'BTC/USDT',category:'Crypto',active:true,createdAt:new Date().toISOString()},{id:'p2',symbol:'ETH/USDT',category:'Crypto',active:true,createdAt:new Date().toISOString()},{id:'p3',symbol:'SOL/USDT',category:'Crypto',active:true,createdAt:new Date().toISOString()}];
-function getPairs(){try{const r=localStorage.getItem(PAIRS_KEY);if(!r){savePairs(DEFAULT_PAIRS);return DEFAULT_PAIRS;}return JSON.parse(r);}catch{return DEFAULT_PAIRS;}}
-function savePairs(p){localStorage.setItem(PAIRS_KEY,JSON.stringify(p));}
-function getTrades(){try{const r=localStorage.getItem(TRADES_KEY);return r?JSON.parse(r):[];}catch{return[];}}
-function saveTrades(t){localStorage.setItem(TRADES_KEY,JSON.stringify(t));}
-function addTradeData(t){const trades=getTrades();const n={...t,id:Date.now().toString(36)+Math.random().toString(36).slice(2),createdAt:new Date().toISOString()};saveTrades([n,...trades]);return n;}
-function deleteTrade(id){saveTrades(getTrades().filter(t=>t.id!==id));}
-function deletePairById(id){savePairs(getPairs().filter(p=>p.id!==id));}
-function togglePairActive(id){savePairs(getPairs().map(p=>p.id===id?{...p,active:!p.active}:p));}
-function computeStats(trades){
-  if(!trades.length)return{total:0,wins:0,losses:0,bes:0,winRate:0,totalPnl:0,avgRR:0,best:null,worst:null,pf:0,byPair:{}};
-  const wins=trades.filter(t=>t.result==='WIN').length,losses=trades.filter(t=>t.result==='LOSS').length,bes=trades.filter(t=>t.result==='BE').length;
-  const winRate=(wins/trades.length)*100,totalPnl=trades.reduce((s,t)=>s+t.pnlPercent,0),avgRR=trades.reduce((s,t)=>s+t.rr,0)/trades.length;
-  const best=Math.max(...trades.map(t=>t.pnlPercent)),worst=Math.min(...trades.map(t=>t.pnlPercent));
-  const gp=trades.filter(t=>t.pnlPercent>0).reduce((s,t)=>s+t.pnlPercent,0),gl=Math.abs(trades.filter(t=>t.pnlPercent<0).reduce((s,t)=>s+t.pnlPercent,0));
-  const pf=gl===0?gp:gp/gl;
-  const byPair={};
-  trades.forEach(t=>{if(!byPair[t.symbol])byPair[t.symbol]={total:0,wins:0,losses:0,pnl:0};byPair[t.symbol].total++;if(t.result==='WIN')byPair[t.symbol].wins++;if(t.result==='LOSS')byPair[t.symbol].losses++;byPair[t.symbol].pnl+=t.pnlPercent;});
-  return{total:trades.length,wins,losses,bes,winRate,totalPnl,avgRR,best,worst,pf,byPair};
-}
-function showPage(name){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  const tabs=document.querySelectorAll('.nav-tab');
-  const idx={dashboard:0,journal:1,pairs:2,checklist:3}[name];
-  if(tabs[idx])tabs[idx].classList.add('active');
-  if(name==='dashboard')renderDashboard();
-  if(name==='journal')renderJournal();
-  if(name==='pairs')renderPairs();
-}
-function renderDashboard(){
-  const trades=getTrades(),stats=computeStats(trades);
-  const wrEl=document.getElementById('s-wr');wrEl.textContent=stats.winRate.toFixed(1)+'%';wrEl.style.color=stats.winRate>=60?'var(--green)':stats.winRate>=40?'var(--yellow)':'var(--red)';
-  document.getElementById('s-wrl').textContent=`${stats.wins}W / ${stats.losses}L / ${stats.bes}BE`;
-  const pnlEl=document.getElementById('s-pnl');pnlEl.textContent=(stats.totalPnl>=0?'+':'')+stats.totalPnl.toFixed(2)+'%';pnlEl.style.color=stats.totalPnl>=0?'var(--green)':'var(--red)';
-  document.getElementById('s-pnlsub').textContent=`${stats.total} trades total`;
-  const pfEl=document.getElementById('s-pf');pfEl.textContent=stats.pf===Infinity?'∞':stats.pf.toFixed(2);pfEl.style.color=stats.pf>=1.5?'var(--green)':'var(--yellow)';
-  document.getElementById('s-rr').textContent=stats.avgRR.toFixed(2)+'R';
-  document.getElementById('s-best').textContent=stats.total>0?'+'+stats.best.toFixed(2)+'%':'—';
-  document.getElementById('s-worst').textContent=stats.total>0?stats.worst.toFixed(2)+'%':'—';
-  const keys=Object.keys(stats.byPair),pairWrap=document.getElementById('pairStatsWrap');
-  if(keys.length>0){pairWrap.style.display='block';document.getElementById('pairStatsTable').innerHTML=keys.map(sym=>{const d=stats.byPair[sym],wr=d.total>0?(d.wins/d.total*100):0,pos=d.pnl>=0;return`<div class="pair-stat-row"><div style="font-family:var(--font-mono);font-size:13px;color:var(--accent);min-width:110px">${sym}</div><div style="flex:1;display:flex;gap:12px;font-size:12px"><span style="color:var(--muted)">${d.total} trades</span><span style="color:var(--green)">${d.wins}W</span><span style="color:var(--red)">${d.losses}L</span></div><div style="font-family:var(--font-mono);font-size:12px;color:${wr>=50?'var(--green)':'var(--red)'};min-width:58px;text-align:right">${wr.toFixed(0)}% WR</div><div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${pos?'var(--green)':'var(--red)'};min-width:76px;text-align:right">${pos?'+':''}${d.pnl.toFixed(2)}%</div></div>`;}).join('');}else{pairWrap.style.display='none';}
-  const recent=trades.slice(0,8),recentEl=document.getElementById('recentTrades');
-  recentEl.innerHTML=recent.length===0?'<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">មិនទាន់មាន Trade ណាមួយ</div></div>':recent.map(t=>tradeRowHTML(t)).join('');
-  document.getElementById('pairsQuickBtn').textContent=`🪙 ${getPairs().filter(p=>p.active).length} Pairs Active`;
-}
-function tradeRowHTML(t){
-  const isWin=t.result==='WIN',isLoss=t.result==='LOSS',color=isWin?'var(--green)':isLoss?'var(--red)':'var(--yellow)';
-  return`<div class="trade-row" onclick="toggleTradeExpand('exp-${t.id}')"><span class="badge badge-${t.direction.toLowerCase()}">${t.direction}</span><div style="flex:1;min-width:0"><div class="trade-sym">${t.symbol}</div><div class="trade-date">${new Date(t.date).toLocaleDateString('km-KH')}</div></div><span class="trade-rr">RR ${t.rr.toFixed(1)}</span>${t.leverage?`<span class="badge" style="border:1px solid var(--border);color:var(--muted)">${t.leverage}x</span>`:''}<span class="trade-pnl" style="color:${color}">${t.pnlPercent>=0?'+':''}${t.pnlPercent.toFixed(2)}%</span><span class="badge badge-${t.result.toLowerCase()}">${t.result}</span></div><div class="trade-expand" id="exp-${t.id}">${t.notes?`<div style="margin-bottom:8px"><span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-right:8px">NOTES:</span>${t.notes}</div>`:''}<div style="display:flex;justify-content:flex-end"><button class="btn btn-red" style="padding:5px 14px;font-size:10px" onclick="event.stopPropagation();confirmDelete('trade','${t.id}')">DELETE</button></div></div>`;
-}
-function toggleTradeExpand(id){const el=document.getElementById(id);if(el)el.classList.toggle('open');}
-let currentDir='LONG',currentResult='WIN';
-function switchJTab(tab){
-  document.getElementById('jtab-log').classList.toggle('active',tab==='log');
-  document.getElementById('jtab-add').classList.toggle('active',tab==='add');
-  document.getElementById('addForm').style.display=tab==='add'?'block':'none';
-  document.getElementById('logSection').style.display=tab==='log'?'block':'none';
-  if(tab==='add')populatePairSelect();if(tab==='log')renderLog();
-}
-function openAddForm(){switchJTab('add');}
-function populatePairSelect(){
-  const pairs=getPairs().filter(p=>p.active),sel=document.getElementById('f-pair');
-  sel.innerHTML=pairs.length===0?'<option value="">— គ្មាន Pair —</option>':pairs.map(p=>`<option value="${p.id}" data-sym="${p.symbol}">${p.symbol}</option>`).join('');
-  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
-}
-function setDir(d){currentDir=d;document.getElementById('btn-long').className='toggle-btn'+(d==='LONG'?' active-long':'');document.getElementById('btn-short').className='toggle-btn'+(d==='SHORT'?' active-short':'');}
-function setResult(r){
-  currentResult=r;
-  document.getElementById('btn-win').className='toggle-btn'+(r==='WIN'?' active-win':'');
-  document.getElementById('btn-loss').className='toggle-btn'+(r==='LOSS'?' active-loss':'');
-  document.getElementById('btn-be').className='toggle-btn'+(r==='BE'?' active-be':'');
-  const b=document.getElementById('saveBtn');b.className=`btn btn-save-${r.toLowerCase()}`;b.textContent=` **...**
 
-_This response is too long to display in full._
+<script>
+// ===================== DATA LAYER =====================
+const PAIRS_KEY = 'parinha_pairs';
+const TRADES_KEY = 'parinha_trades';
+
+const DEFAULT_PAIRS = [
+  { id: 'p1', symbol: 'BTC/USDT', category: 'Crypto', active: true, createdAt: new Date().toISOString() },
+  { id: 'p2', symbol: 'ETH/USDT', category: 'Crypto', active: true, createdAt: new Date().toISOString() },
+  { id: 'p3', symbol: 'SOL/USDT', category: 'Crypto', active: true, createdAt: new Date().toISOString() }
+];
+
+function getPairs() {
+  try {
+    const r = localStorage.getItem(PAIRS_KEY);
+    if (!r) { savePairs(DEFAULT_PAIRS); return DEFAULT_PAIRS; }
+    return JSON.parse(r);
+  } catch { return DEFAULT_PAIRS; }
+}
+
+function savePairs(p) { localStorage.setItem(PAIRS_KEY, JSON.stringify(p)); }
+
+function getTrades() {
+  try {
+    const r = localStorage.getItem(TRADES_KEY);
+    return r ? JSON.parse(r) : [];
+  } catch { return []; }
+}
+
+function saveTrades(t) { localStorage.setItem(TRADES_KEY, JSON.stringify(t)); }
+
+function addTradeData(t) {
+  const trades = getTrades();
+  const n = { ...t, id: Date.now().toString(36) + Math.random().toString(36).slice(2), createdAt: new Date().toISOString() };
+  saveTrades([n, ...trades]);
+  return n;
+}
+
+function deleteTrade(id) { saveTrades(getTrades().filter(t => t.id !== id)); }
+function deletePairById(id) { savePairs(getPairs().filter(p => p.id !== id)); }
+function togglePairActive(id) { savePairs(getPairs().map(p => p.id === id ? { ...p, active: !p.active } : p)); }
+
+// ===================== STATS =====================
+function computeStats(trades) {
+  if (!trades.length) return { total: 0, wins: 0, losses: 0, bes: 0, winRate: 0, totalPnl: 0, avgRR: 0, best: null, worst: null, pf: 0, byPair: {} };
+  const wins = trades.filter(t => t.result === 'WIN').length;
+  const losses = trades.filter(t => t.result === 'LOSS').length;
+  const bes = trades.filter(t => t.result === 'BE').length;
+  const winRate = (wins / trades.length) * 100;
+  const totalPnl = trades.reduce((s, t) => s + t.pnlPercent, 0);
+  const avgRR = trades.reduce((s, t) => s + t.rr, 0) / trades.length;
+  const best = Math.max(...trades.map(t => t.pnlPercent));
+  const worst = Math.min(...trades.map(t => t.pnlPercent));
+  const gp = trades.filter(t => t.pnlPercent > 0).reduce((s, t) => s + t.pnlPercent, 0);
+  const gl = Math.abs(trades.filter(t => t.pnlPercent < 0).reduce((s, t) => s + t.pnlPercent, 0));
+  const pf = gl === 0 ? gp : gp / gl;
+  const byPair = {};
+  trades.forEach(t => {
+    if (!byPair[t.symbol]) byPair[t.symbol] = { total: 0, wins: 0, losses: 0, pnl: 0 };
+    byPair[t.symbol].total++;
+    if (t.result === 'WIN') byPair[t.symbol].wins++;
+    if (t.result === 'LOSS') byPair[t.symbol].losses++;
+    byPair[t.symbol].pnl += t.pnlPercent;
+  });
+  return { total: trades.length, wins, losses, bes, winRate, totalPnl, avgRR, best, worst, pf, byPair };
+}
+
+// ===================== PAGE NAV =====================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const tabs = document.querySelectorAll('nav .nav-tab');
+  const idx = { dashboard: 0, journal: 1, pairs: 2, checklist: 3 }[name];
+  if (tabs[idx]) tabs[idx].classList.add('active');
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'journal') renderJournal();
+  if (name === 'pairs') renderPairs();
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard() {
+  const trades = getTrades(), stats = computeStats(trades);
+  const wrEl = document.getElementById('s-wr');
+  wrEl.textContent = stats.winRate.toFixed(1) + '%';
+  wrEl.style.color = stats.winRate >= 60 ? 'var(--green)' : stats.winRate >= 40 ? 'var(--yellow)' : 'var(--red)';
+  document.getElementById('s-wrl').textContent = `${stats.wins}W / ${stats.losses}L / ${stats.bes}BE`;
+  const pnlEl = document.getElementById('s-pnl');
+  pnlEl.textContent = (stats.totalPnl >= 0 ? '+' : '') + stats.totalPnl.toFixed(2) + '%';
+  pnlEl.style.color = stats.totalPnl >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('s-pnlsub').textContent = `${stats.total} trades total`;
+  const pfEl = document.getElementById('s-pf');
+  pfEl.textContent = stats.pf === Infinity ? '∞' : stats.pf.toFixed(2);
+  pfEl.style.color = stats.pf >= 1.5 ? 'var(--green)' : 'var(--yellow)';
+  document.getElementById('s-rr').textContent = stats.avgRR.toFixed(2) + 'R';
+  document.getElementById('s-best').textContent = stats.total > 0 ? '+' + stats.best.toFixed(2) + '%' : '—';
+  document.getElementById('s-worst').textContent = stats.total > 0 ? stats.worst.toFixed(2) + '%' : '—';
+
+  const keys = Object.keys(stats.byPair);
+  const pairWrap = document.getElementById('pairStatsWrap');
+  if (keys.length > 0) {
+    pairWrap.style.display = 'block';
+    document.getElementById('pairStatsTable').innerHTML = keys.map(sym => {
+      const d = stats.byPair[sym], wr = d.total > 0 ? (d.wins / d.total * 100) : 0, pos = d.pnl >= 0;
+      return `<div class="pair-stat-row">
+        <div style="font-family:var(--font-mono);font-size:13px;color:var(--accent);min-width:110px">${sym}</div>
+        <div style="flex:1;display:flex;gap:12px;font-size:12px">
+          <span style="color:var(--muted)">${d.total} trades</span>
+          <span style="color:var(--green)">${d.wins}W</span>
+          <span style="color:var(--red)">${d.losses}L</span>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:12px;color:${wr >= 50 ? 'var(--green)' : 'var(--red)'};min-width:58px;text-align:right">${wr.toFixed(0)}% WR</div>
+        <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'};min-width:76px;text-align:right">${pos ? '+' : ''}${d.pnl.toFixed(2)}%</div>
+      </div>`;
+    }).join('');
+  } else {
+    pairWrap.style.display = 'none';
+  }
+
+  const recent = trades.slice(0, 8);
+  const recentEl = document.getElementById('recentTrades');
+  recentEl.innerHTML = recent.length === 0
+    ? '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">មិនទាន់មាន Trade ណាមួយ</div></div>'
+    : recent.map(t => tradeRowHTML(t)).join('');
+  document.getElementById('pairsQuickBtn').textContent = `🪙 ${getPairs().filter(p => p.active).length} Pairs Active`;
+}
+
+// ===================== TRADE ROW HTML =====================
+function tradeRowHTML(t) {
+  const isWin = t.result === 'WIN', isLoss = t.result === 'LOSS';
+  const color = isWin ? 'var(--green)' : isLoss ? 'var(--red)' : 'var(--yellow)';
+  return `<div class="trade-row" onclick="toggleTradeExpand('exp-${t.id}')">
+    <span class="badge badge-${t.direction.toLowerCase()}">${t.direction}</span>
+    <div style="flex:1;min-width:0">
+      <div class="trade-sym">${t.symbol}</div>
+      <div class="trade-date">${new Date(t.date + 'T00:00:00').toLocaleDateString('km-KH')}</div>
+    </div>
+    <span class="trade-rr">RR ${t.rr.toFixed(1)}</span>
+    ${t.leverage ? `<span class="badge" style="border:1px solid var(--border);color:var(--muted)">${t.leverage}x</span>` : ''}
+    <span class="trade-pnl" style="color:${color}">${t.pnlPercent >= 0 ? '+' : ''}${t.pnlPercent.toFixed(2)}%</span>
+    <span class="badge badge-${t.result.toLowerCase()}">${t.result}</span>
+    <div class="trade-expand" id="exp-${t.id}">
+      ${t.notes ? `<div style="margin-bottom:8px"><span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-right:8px">NOTES:</span>${t.notes}</div>` : ''}
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn btn-red" style="padding:5px 14px;font-size:10px" onclick="event.stopPropagation();confirmDelete('trade','${t.id}')">DELETE</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleTradeExpand(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+// ===================== JOURNAL =====================
+let currentDir = 'LONG', currentResult = 'WIN';
+
+function renderJournal() {
+  renderLog();
+  populateFilterPair();
+}
+
+function switchJTab(tab) {
+  document.getElementById('jtab-log').classList.toggle('active', tab === 'log');
+  document.getElementById('jtab-add').classList.toggle('active', tab === 'add');
+  document.getElementById('addForm').style.display = tab === 'add' ? 'block' : 'none';
+  document.getElementById('logSection').style.display = tab === 'log' ? 'block' : 'none';
+  if (tab === 'add') { populatePairSelect(); resetForm(); }
+  if (tab === 'log') renderLog();
+}
+
+function openAddForm() { switchJTab('add'); }
+
+function resetForm() {
+  currentDir = 'LONG'; currentResult = 'WIN';
+  setDir('LONG'); setResult('WIN');
+  document.getElementById('f-rr').value = '';
+  document.getElementById('f-pnl').value = '';
+  document.getElementById('f-lev').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('formError').style.display = 'none';
+}
+
+function populatePairSelect() {
+  const pairs = getPairs().filter(p => p.active);
+  const sel = document.getElementById('f-pair');
+  sel.innerHTML = pairs.length === 0
+    ? '<option value="">— គ្មាន Pair —</option>'
+    : pairs.map(p => `<option value="${p.id}" data-sym="${p.symbol}">${p.symbol}</option>`).join('');
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+}
+
+function populateFilterPair() {
+  const trades = getTrades();
+  const syms = [...new Set(trades.map(t => t.symbol))];
+  const sel = document.getElementById('filterPair');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="ALL">All Pairs</option>' + syms.map(s => `<option value="${s}">${s}</option>`).join('');
+  if (cur && syms.includes(cur)) sel.value = cur;
+}
+
+function setDir(d) {
+  currentDir = d;
+  document.getElementById('btn-long').className = 'toggle-btn' + (d === 'LONG' ? ' active-long' : '');
+  document.getElementById('btn-short').className = 'toggle-btn' + (d === 'SHORT' ? ' active-short' : '');
+}
+
+function setResult(r) {
+  currentResult = r;
+  document.getElementById('btn-win').className = 'toggle-btn' + (r === 'WIN' ? ' active-win' : '');
+  document.getElementById('btn-loss').className = 'toggle-btn' + (r === 'LOSS' ? ' active-loss' : '');
+  document.getElementById('btn-be').className = 'toggle-btn' + (r === 'BE' ? ' active-be' : '');
+  const b = document.getElementById('saveBtn');
+  const labels = { WIN: '💾 SAVE WIN', LOSS: '💾 SAVE LOSS', BE: '💾 SAVE BE' };
+  b.className = `btn btn-save-${r.toLowerCase()}`;
+  b.textContent = labels[r];
+}
+
+function saveTrade() {
+  const errEl = document.getElementById('formError');
+  errEl.style.display = 'none';
+  const pairSel = document.getElementById('f-pair');
+  if (!pairSel.value) { errEl.textContent = '⚠ ជ្រើស Pair មុន'; errEl.style.display = 'block'; return; }
+  const sym = pairSel.options[pairSel.selectedIndex].getAttribute('data-sym') || pairSel.options[pairSel.selectedIndex].text;
+  const rr = parseFloat(document.getElementById('f-rr').value);
+  const pnl = parseFloat(document.getElementById('f-pnl').value);
+  const dateVal = document.getElementById('f-date').value;
+  if (!rr || isNaN(rr) || rr <= 0) { errEl.textContent = '⚠ បញ្ចូល RR Ratio'; errEl.style.display = 'block'; return; }
+  if (isNaN(pnl)) { errEl.textContent = '⚠ បញ្ចូល P&L %'; errEl.style.display = 'block'; return; }
+  if (!dateVal) { errEl.textContent = '⚠ ជ្រើស Date'; errEl.style.display = 'block'; return; }
+  const lev = document.getElementById('f-lev').value;
+  addTradeData({
+    symbol: sym,
+    direction: currentDir,
+    result: currentResult,
+    rr,
+    pnlPercent: pnl,
+    leverage: lev ? parseInt(lev) : null,
+    date: dateVal,
+    notes: document.getElementById('f-notes').value.trim()
+  });
+  switchJTab('log');
+  renderDashboard();
+}
+
+function renderLog() {
+  const trades = getTrades();
+  const pairFilter = document.getElementById('filterPair').value;
+  const resultFilter = document.getElementById('filterResult').value;
+  let filtered = trades;
+  if (pairFilter !== 'ALL') filtered = filtered.filter(t => t.symbol === pairFilter);
+  if (resultFilter !== 'ALL') filtered = filtered.filter(t => t.result === resultFilter);
+  document.getElementById('logCount').textContent = `${filtered.length} trades`;
+  const el = document.getElementById('tradeLog');
+  el.innerHTML = filtered.length === 0
+    ? '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">មិនមាន Trade ដែលត្រូវ Filter</div></div>'
+    : filtered.map(t => tradeRowHTML(t)).join('');
+  populateFilterPair();
+}
+
+// ===================== PAIRS =====================
+function renderPairs() {
+  const pairs = getPairs();
+  const active = pairs.filter(p => p.active);
+  const inactive = pairs.filter(p => !p.active);
+  document.getElementById('activePairLabel').textContent = `Active — ${active.length} pairs`;
+  document.getElementById('activePairsTable').innerHTML = active.length === 0
+    ? '<div class="empty"><div class="empty-icon">🪙</div><div class="empty-text">គ្មាន Pair Active</div></div>'
+    : active.map(p => pairRowHTML(p, true)).join('');
+  const inWrap = document.getElementById('inactivePairsWrap');
+  if (inactive.length > 0) {
+    inWrap.style.display = 'block';
+    document.getElementById('inactivePairLabel').textContent = `Inactive — ${inactive.length} pairs`;
+    document.getElementById('inactivePairsTable').innerHTML = inactive.map(p => pairRowHTML(p, false)).join('');
+  } else {
+    inWrap.style.display = 'none';
+  }
+}
+
+function pairRowHTML(p, isActive) {
+  const colors = { Crypto: '#00e5ff', Forex: '#00ff88', Stocks: '#ffd700', Commodities: '#ff9900', Indices: '#aa88ff' };
+  const col = colors[p.category] || '#445566';
+  return `<div class="pair-row">
+    <div class="pair-dot" style="background:${col};box-shadow:0 0 6px ${col}66"></div>
+    <div style="flex:1">
+      <div class="pair-sym">${p.symbol}</div>
+      <div class="pair-cat">${p.category}</div>
+    </div>
+    <button class="btn ${isActive ? 'btn-muted' : 'btn-green'}" style="padding:5px 12px;font-size:10px" onclick="togglePairActive('${p.id}');renderPairs()">
+      ${isActive ? 'Deactivate' : 'Activate'}
+    </button>
+    <button class="btn btn-red" style="padding:5px 12px;font-size:10px;margin-left:6px" onclick="confirmDelete('pair','${p.id}')">✕</button>
+  </div>`;
+}
+
+function togglePairForm() {
+  const f = document.getElementById('pairAddForm');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display === 'block') document.getElementById('p-sym').focus();
+}
+
+function addPair() {
+  const errEl = document.getElementById('pairAddError');
+  errEl.style.display = 'none';
+  const sym = document.getElementById('p-sym').value.trim().toUpperCase();
+  if (!sym) { errEl.textContent = '⚠ បញ្ចូល Symbol'; errEl.style.display = 'block'; return; }
+  const pairs = getPairs();
+  if (pairs.find(p => p.symbol === sym)) { errEl.textContent = '⚠ Pair នេះមានរួចហើយ'; errEl.style.display = 'block'; return; }
+  const cat = document.getElementById('p-cat').value;
+  pairs.push({ id: 'p' + Date.now(), symbol: sym, category: cat, active: true, createdAt: new Date().toISOString() });
+  savePairs(pairs);
+  document.getElementById('p-sym').value = '';
+  document.getElementById('pairAddForm').style.display = 'none';
+  renderPairs();
+}
+
+// ===================== CONFIRM DELETE =====================
+let _pendingDelete = null;
+function confirmDelete(type, id) {
+  _pendingDelete = { type, id };
+  document.getElementById('confirmMsg').textContent = type === 'trade' ? 'Delete Trade នេះ?' : 'Delete Pair នេះ?';
+  document.getElementById('confirmOverlay').classList.add('open');
+  document.getElementById('confirmYes').onclick = function () {
+    if (_pendingDelete.type === 'trade') {
+      deleteTrade(_pendingDelete.id);
+      renderLog();
+      renderDashboard();
+    } else {
+      deletePairById(_pendingDelete.id);
+      renderPairs();
+    }
+    closeConfirm();
+  };
+}
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('open');
+  _pendingDelete = null;
+}
+
+// ===================== CHECKLIST =====================
+const CL_GROUPS = { 1: 4, 2: 5, 3: 4, 4: 3, 5: 3 };
+const TOTAL_ITEMS = Object.values(CL_GROUPS).reduce((a, b) => a + b, 0);
+
+function clToggle(el) {
+  el.classList.toggle('checked');
+  updateChecklist();
+}
+
+function updateChecklist() {
+  let totalChecked = 0;
+  for (let g = 1; g <= 5; g++) {
+    const group = document.getElementById('group-' + g);
+    const items = group.querySelectorAll('.cl-item');
+    const checked = group.querySelectorAll('.cl-item.checked').length;
+    totalChecked += checked;
+    document.getElementById('cnt-' + g).textContent = `${checked}/${items.length}`;
+  }
+  const pct = Math.round((totalChecked / TOTAL_ITEMS) * 100);
+  document.getElementById('cl-pct').textContent = pct + '%';
+  document.getElementById('cl-bar').style.width = pct + '%';
+  document.getElementById('cl-total').textContent = `${totalChecked} / ${TOTAL_ITEMS} ✓`;
+
+  // Entry (group 2) and Exit (group 4) pills
+  const entryChecked = document.querySelectorAll('#group-2 .cl-item.checked').length;
+  const exitChecked = document.querySelectorAll('#group-4 .cl-item.checked').length;
+  document.getElementById('cl-entry').textContent = `ENTRY: ${entryChecked}/5`;
+  document.getElementById('cl-exit').textContent = `EXIT: ${exitChecked}/3`;
+
+  // Decision box
+  const dec = document.getElementById('cl-decision');
+  if (pct === 100) {
+    dec.className = 'decision-box ready';
+    dec.innerHTML = '<div class="decision-icon">✅</div><div class="decision-title">READY TO TRADE</div><div class="decision-msg">ចំណុចទាំងអស់ Check ហើយ — Trade បានហើយ!</div>';
+  } else if (pct >= 60) {
+    dec.className = 'decision-box partial';
+    dec.innerHTML = `<div class="decision-icon">⚠️</div><div class="decision-title">PARTIAL</div><div class="decision-msg">${TOTAL_ITEMS - totalChecked} ចំណុចទៀតត្រូវ Check</div>`;
+  } else {
+    dec.className = 'decision-box no-trade';
+    dec.innerHTML = '<div class="decision-icon">🚫</div><div class="decision-title">NO TRADE</div><div class="decision-msg">ត្រូវ Check ចំណុចទាំងអស់ជាមុនសិន</div>';
+  }
+}
+
+function clReset() {
+  document.querySelectorAll('.cl-item').forEach(el => el.classList.remove('checked'));
+  updateChecklist();
+}
+
+// ===================== INIT =====================
+renderDashboard();
+</script>
+</body>
+</html>
